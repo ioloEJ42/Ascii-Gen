@@ -56,6 +56,7 @@ export const PatternSelector: React.FC<PatternSelectorProps> = ({
             <SelectItem value="ripple">Ripple</SelectItem>
             <SelectItem value="fractal">Fractal</SelectItem>
             <SelectItem value="noise">Noise</SelectItem>
+            <SelectItem value="vortex">Vortex</SelectItem>
           </SelectContent>
         </Select>
       </div>

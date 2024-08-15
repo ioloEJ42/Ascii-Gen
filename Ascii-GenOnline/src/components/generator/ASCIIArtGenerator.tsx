@@ -11,7 +11,7 @@ import { useArtGeneration } from "./hooks/useArtGeneration";
 import { ArtConfig } from "./types";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "./ThemeProvider";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Github } from "lucide-react";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import {
@@ -33,6 +33,14 @@ const ASCIIArtGenerator: React.FC = () => {
     rotation: 0,
   });
 
+  useEffect(() => {
+    setConfig((prevConfig) => ({
+      ...prevConfig,
+      backgroundColor: theme === "light" ? "#ffffff" : "#000000",
+      mainColor: theme === "light" ? "#000000" : "#ffffff",
+    }));
+  }, [theme]);
+
   const time = useAnimationTimer();
   const art = useArtGeneration(config, time);
   const artDisplayRef = useRef<HTMLDivElement>(null);
@@ -50,7 +58,7 @@ const ASCIIArtGenerator: React.FC = () => {
         const newFontSize = Math.floor(
           Math.min(width / config.size, height / config.size) * 0.9
         );
-        setFontSize(Math.max(6, Math.min(newFontSize, 16))); // Limit font size between 6px and 16px
+        setFontSize(Math.max(6, Math.min(newFontSize, 16)));
       }
     };
 
@@ -83,7 +91,7 @@ const ASCIIArtGenerator: React.FC = () => {
       setExportProgress(0);
       exportAsGif(
         artDisplayRef.current,
-        2000, // duration
+        2000,
         frameCount,
         (progress) => setExportProgress(progress),
         (url) => {
@@ -103,12 +111,19 @@ const ASCIIArtGenerator: React.FC = () => {
     exportAsReactComponent(art, config);
   };
 
-  const isAnimated = ["wave", "random", "spiral", "pulsate", "ripple"].includes(
-    config.pattern
-  );
+  const isAnimated = [
+    "wave",
+    "random",
+    "spiral",
+    "pulsate",
+    "ripple",
+    "fractal",
+    "noise",
+    "vortex",
+  ].includes(config.pattern);
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className="p-4 max-w-7xl mx-auto transition-colors duration-300">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">ASCII Art Generator</h1>
         <Button
@@ -263,7 +278,7 @@ const ASCIIArtGenerator: React.FC = () => {
           >
             <div
               ref={artDisplayRef}
-              className="font-mono whitespace-pre p-2 lg:p-4 border rounded overflow-hidden"
+              className="font-mono whitespace-pre p-2 lg:p-4 border rounded overflow-hidden transition-colors duration-300"
               style={{
                 backgroundColor: config.backgroundColor,
                 color: config.mainColor,
@@ -282,6 +297,22 @@ const ASCIIArtGenerator: React.FC = () => {
           </ResizableBox>
         </div>
       </div>
+      <footer className="mt-8 py-4 border-t transition-colors duration-300 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            ASCII Art Generator by Iolo
+            <a
+              href="https://github.com/ioloEJ42"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-300"
+            >
+              <Github className="w-5 h-5 mr-2" />
+              GitHub: ioloEJ42
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

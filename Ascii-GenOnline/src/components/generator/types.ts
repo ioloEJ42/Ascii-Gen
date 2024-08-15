@@ -1,6 +1,6 @@
 export type Shape = "circle" | "square" | "triangle";
 export type StaticPattern = "solid" | "stripey" | "zigzag";
-export type AnimatedPattern = "wave" | "random" | "spiral" | "pulsate" | "ripple" | "fractal" | "noise";
+export type AnimatedPattern = "wave" | "random" | "spiral" | "pulsate" | "ripple" | "fractal" | "noise" | "vortex";
 export type Pattern = StaticPattern | AnimatedPattern;
 
 export interface ArtConfig {
