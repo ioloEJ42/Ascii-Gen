@@ -22,9 +22,7 @@ import {
 
 const ASCIIArtGenerator: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
-  const [configHistory, setConfigHistory] = useState<ArtConfig[]>([]);
-  const [currentConfigIndex, setCurrentConfigIndex] = useState(-1);
-  const [config, setConfig] = useState<ArtConfig>({
+  const initialConfig: ArtConfig = {
     size: 40,
     shape: "circle",
     pattern: "solid",
@@ -33,16 +31,28 @@ const ASCIIArtGenerator: React.FC = () => {
     mainColor: theme === "light" ? "#000000" : "#ffffff",
     accentColors: [],
     rotation: 0,
-  });
+  };
 
-  const updateConfig = useCallback((newConfig: Partial<ArtConfig>) => {
-    setConfig(prevConfig => {
-      const updatedConfig = { ...prevConfig, ...newConfig };
-      setConfigHistory(prev => [...prev.slice(0, currentConfigIndex + 1), updatedConfig]);
-      setCurrentConfigIndex(prev => prev + 1);
-      return updatedConfig;
-    });
-  }, [currentConfigIndex]);
+  const [configHistory, setConfigHistory] = useState<ArtConfig[]>([
+    initialConfig,
+  ]);
+  const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
+  const [config, setConfig] = useState<ArtConfig>(initialConfig);
+
+  const updateConfig = useCallback(
+    (newConfig: Partial<ArtConfig>) => {
+      setConfig((prevConfig) => {
+        const updatedConfig = { ...prevConfig, ...newConfig };
+        setConfigHistory((prev) => [
+          ...prev.slice(0, currentConfigIndex + 1),
+          updatedConfig,
+        ]);
+        setCurrentConfigIndex((prev) => prev + 1);
+        return updatedConfig;
+      });
+    },
+    [currentConfigIndex]
+  );
 
   useEffect(() => {
     updateConfig({
@@ -121,33 +131,61 @@ const ASCIIArtGenerator: React.FC = () => {
     exportAsReactComponent(art, config);
   };
 
-  const undo = () => {
+  const undo = useCallback(() => {
     if (currentConfigIndex > 0) {
-      setCurrentConfigIndex(prev => prev - 1);
-      setConfig(configHistory[currentConfigIndex - 1]);
+      const newIndex = currentConfigIndex - 1;
+      setCurrentConfigIndex(newIndex);
+      setConfig(configHistory[newIndex]);
     }
-  };
+  }, [currentConfigIndex, configHistory]);
 
-  const redo = () => {
+  const redo = useCallback(() => {
     if (currentConfigIndex < configHistory.length - 1) {
-      setCurrentConfigIndex(prev => prev + 1);
-      setConfig(configHistory[currentConfigIndex + 1]);
+      const newIndex = currentConfigIndex + 1;
+      setCurrentConfigIndex(newIndex);
+      setConfig(configHistory[newIndex]);
     }
-  };
+  }, [currentConfigIndex, configHistory]);
 
-  const randomize = () => {
+  const randomize = useCallback(() => {
     const randomConfig: ArtConfig = {
       size: Math.floor(Math.random() * 61) + 20,
-      shape: ["circle", "square", "triangle"][Math.floor(Math.random() * 3)] as Shape,
-      pattern: ["solid", "stripey", "zigzag", "wave", "random", "spiral", "pulsate", "ripple", "fractal", "noise", "vortex"][Math.floor(Math.random() * 11)] as Pattern,
-      characters: " .:-=+*#%@".split('').sort(() => Math.random() - 0.5).join(''),
-      backgroundColor: `#${Math.floor(Math.random()*16777215).toString(16)}`,
-      mainColor: `#${Math.floor(Math.random()*16777215).toString(16)}`,
-      accentColors: Array(3).fill(null).map(() => `#${Math.floor(Math.random()*16777215).toString(16)}`),
+      shape: ["circle", "square", "triangle"][
+        Math.floor(Math.random() * 3)
+      ] as Shape,
+      pattern: [
+        "solid",
+        "stripey",
+        "zigzag",
+        "wave",
+        "random",
+        "spiral",
+        "pulsate",
+        "ripple",
+        "fractal",
+        "noise",
+        "vortex",
+      ][Math.floor(Math.random() * 11)] as Pattern,
+      characters: " .:-=+*#%@"
+        .split("")
+        .sort(() => Math.random() - 0.5)
+        .join(""),
+      backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+      mainColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+      accentColors: Array(3)
+        .fill(null)
+        .map(() => `#${Math.floor(Math.random() * 16777215).toString(16)}`),
       rotation: Math.floor(Math.random() * 361),
     };
     updateConfig(randomConfig);
-  };
+  }, [updateConfig]);
+
+  // Debugging logs
+  useEffect(() => {
+    console.log("Current config:", config);
+    console.log("Config history:", configHistory);
+    console.log("Current index:", currentConfigIndex);
+  }, [config, configHistory, currentConfigIndex]);
 
   const isAnimated = [
     "wave",
@@ -196,7 +234,9 @@ const ASCIIArtGenerator: React.FC = () => {
               onClick={toggleTheme}
               variant="outline"
               size="icon"
-              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              aria-label={`Switch to ${
+                theme === "light" ? "dark" : "light"
+              } mode`}
             >
               {theme === "light" ? (
                 <Moon className="h-[1.2rem] w-[1.2rem]" />
@@ -237,7 +277,9 @@ const ASCIIArtGenerator: React.FC = () => {
                   <Input
                     id="characters-input"
                     value={config.characters}
-                    onChange={(e) => updateConfig({ characters: e.target.value })}
+                    onChange={(e) =>
+                      updateConfig({ characters: e.target.value })
+                    }
                     aria-label="ASCII characters to use in the art"
                   />
                 </div>
@@ -245,11 +287,15 @@ const ASCIIArtGenerator: React.FC = () => {
               <TabsContent value="color">
                 <ColorSelector
                   backgroundColor={config.backgroundColor}
-                  setBackgroundColor={(backgroundColor) => updateConfig({ backgroundColor })}
+                  setBackgroundColor={(backgroundColor) =>
+                    updateConfig({ backgroundColor })
+                  }
                   mainColor={config.mainColor}
                   setMainColor={(mainColor) => updateConfig({ mainColor })}
                   accentColors={config.accentColors}
-                  setAccentColors={(accentColors) => updateConfig({ accentColors })}
+                  setAccentColors={(accentColors) =>
+                    updateConfig({ accentColors })
+                  }
                 />
               </TabsContent>
             </Tabs>
@@ -358,7 +404,7 @@ const ASCIIArtGenerator: React.FC = () => {
       <footer className="mt-8 py-4 border-t transition-colors duration-300 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            ASCII Art Generator by Iolo
+            ASCII Online © by Iolo 2024
             <a
               href="https://github.com/ioloEJ42"
               target="_blank"
