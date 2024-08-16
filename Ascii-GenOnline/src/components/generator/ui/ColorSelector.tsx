@@ -1,13 +1,8 @@
-import React from 'react';
+// in ColorSelector.tsx
+
+import React from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { HexColorPicker } from "react-colorful";
+import { Input } from "@/components/ui/input";
 
 interface ColorSelectorProps {
   backgroundColor: string;
@@ -30,7 +25,7 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
     setAccentColors([...accentColors, "#ffffff"]);
   };
 
-  const updateAccentColor = (color: string, index: number) => {
+  const updateAccentColor = (index: number, color: string) => {
     const newColors = [...accentColors];
     newColors[index] = color;
     setAccentColors(newColors);
@@ -46,77 +41,41 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
         <label className="block text-sm font-medium mb-1">
           Background Color
         </label>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="w-full justify-start text-left font-normal" variant="outline" style={{ backgroundColor }}>
-              <span className="mr-2" style={{ backgroundColor, border: '1px solid black', width: 20, height: 20, display: 'inline-block' }}></span>
-              {backgroundColor}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogTitle>Pick Background Color</DialogTitle>
-            <DialogDescription asChild>
-              <div>
-                <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} />
-              </div>
-            </DialogDescription>
-          </DialogContent>
-        </Dialog>
+        <Input
+          type="color"
+          value={backgroundColor}
+          onChange={(e) => setBackgroundColor(e.target.value)}
+        />
       </div>
-
       <div>
-        <label className="block text-sm font-medium mb-1">
-          Main Color
-        </label>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="w-full justify-start text-left font-normal" variant="outline" style={{ color: mainColor }}>
-              <span className="mr-2" style={{ backgroundColor: mainColor, border: '1px solid black', width: 20, height: 20, display: 'inline-block' }}></span>
-              {mainColor}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogTitle>Pick Main Color</DialogTitle>
-            <DialogDescription asChild>
-              <div>
-                <HexColorPicker color={mainColor} onChange={setMainColor} />
-              </div>
-            </DialogDescription>
-          </DialogContent>
-        </Dialog>
+        <label className="block text-sm font-medium mb-1">Main Color</label>
+        <Input
+          type="color"
+          value={mainColor}
+          onChange={(e) => setMainColor(e.target.value)}
+        />
       </div>
-
       <div>
-        <label className="block text-sm font-medium mb-1">
-          Accent Colors
-        </label>
+        <label className="block text-sm font-medium mb-1">Accent Colors</label>
         {accentColors.map((color, index) => (
           <div key={index} className="flex items-center space-x-2 mt-2">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="flex-grow justify-start text-left font-normal" variant="outline" style={{ color }}>
-                  <span className="mr-2" style={{ backgroundColor: color, border: '1px solid black', width: 20, height: 20, display: 'inline-block' }}></span>
-                  {color}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogTitle>Pick Accent Color {index + 1}</DialogTitle>
-                <DialogDescription asChild>
-                  <div>
-                    <HexColorPicker
-                      color={color}
-                      onChange={(newColor) => updateAccentColor(newColor, index)}
-                    />
-                  </div>
-                </DialogDescription>
-              </DialogContent>
-            </Dialog>
-            <Button onClick={() => removeAccentColor(index)} variant="destructive">
+            <Input
+              type="color"
+              value={color}
+              onChange={(e) => updateAccentColor(index, e.target.value)}
+            />
+            <Button
+              onClick={() => removeAccentColor(index)}
+              variant="destructive"
+              size="sm"
+            >
               Remove
             </Button>
           </div>
         ))}
-        <Button onClick={addAccentColor} className="mt-2">Add Accent Color</Button>
+        <Button onClick={addAccentColor} className="mt-2">
+          Add Accent Color
+        </Button>
       </div>
     </div>
   );

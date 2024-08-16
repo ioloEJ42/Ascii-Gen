@@ -1,4 +1,4 @@
-export type Shape = "circle" | "square" | "triangle";
+export type Shape = "circle" | "square" | "triangle" | "heart" | "octagon" | "star" | "diamond";
 export type StaticPattern = "solid" | "stripey" | "zigzag";
 export type AnimatedPattern = "wave" | "random" | "spiral" | "pulsate" | "ripple" | "fractal" | "noise" | "vortex";
 export type Pattern = StaticPattern | AnimatedPattern;

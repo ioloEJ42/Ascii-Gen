@@ -49,6 +49,42 @@ const generateShape = (
         Math.abs(rotatedX - centerX) <=
           (triangleHeight - triangleY) / Math.sqrt(3)
       );
+    case "heart":
+      const heartX = (rotatedX - centerX) / (size / 2);
+      const heartY = (rotatedY - centerY) / (size / 2);
+      return (
+        Math.pow(Math.pow(heartX, 2) + Math.pow(heartY, 2) - 1, 3) -
+          Math.pow(heartX, 2) * Math.pow(heartY, 3) <=
+        0
+      );
+    case "octagon":
+      const octRadius = size / 2;
+      const octX = Math.abs(rotatedX - centerX);
+      const octY = Math.abs(rotatedY - centerY);
+      return (
+        octX <= octRadius * Math.cos(Math.PI / 8) &&
+        octY <= octRadius * Math.cos(Math.PI / 8) &&
+        octX + octY <= octRadius * Math.sqrt(2) * Math.cos(Math.PI / 8)
+      );
+    case "star":
+      const angle = Math.atan2(rotatedY - centerY, rotatedX - centerX);
+      const distanceFromCenter = Math.sqrt(
+        Math.pow(rotatedX - centerX, 2) + Math.pow(rotatedY - centerY, 2)
+      );
+      const armAngle = (Math.PI * 2) / 10; // 5-pointed star
+      const innerRadius = size / 6;
+      const outerRadius = size / 2;
+      const angleModulus = angle % armAngle;
+      const normalizedAngle =
+        angleModulus > armAngle / 2 ? armAngle - angleModulus : angleModulus;
+      const radiusAtAngle =
+        innerRadius +
+        (outerRadius - innerRadius) * Math.abs(Math.sin(normalizedAngle * 5));
+      return distanceFromCenter <= radiusAtAngle;
+    case "diamond":
+      const diamondX = Math.abs(rotatedX - centerX);
+      const diamondY = Math.abs(rotatedY - centerY);
+      return diamondX + diamondY <= size / 2;
     default:
       return false;
   }
@@ -84,6 +120,33 @@ const calculateValue = (
         (size / 2);
       break;
     case "triangle":
+      value =
+        (Math.abs(rotatedX - centerX) + Math.abs(rotatedY - centerY)) / size;
+      break;
+    case "heart":
+      const heartX = (rotatedX - centerX) / (size / 2);
+      const heartY = (rotatedY - centerY) / (size / 2);
+      value = Math.sqrt(
+        Math.pow(heartX, 2) + Math.pow(heartY - Math.abs(heartX) * 0.7, 2)
+      );
+      break;
+    case "octagon":
+      const octX = Math.abs(rotatedX - centerX) / (size / 2);
+      const octY = Math.abs(rotatedY - centerY) / (size / 2);
+      value = Math.max(octX, octY, (octX + octY) / Math.sqrt(2));
+      break;
+    case "star":
+      const angle = Math.atan2(rotatedY - centerY, rotatedX - centerX);
+      const distanceFromCenter = Math.sqrt(
+        Math.pow(rotatedX - centerX, 2) + Math.pow(rotatedY - centerY, 2)
+      );
+      const armAngle = (Math.PI * 2) / 10;
+      const normalizedAngle = angle % armAngle;
+      value =
+        (distanceFromCenter / (size / 2)) *
+        (1 - 0.5 * Math.abs(Math.sin(normalizedAngle * 5)));
+      break;
+    case "diamond":
       value =
         (Math.abs(rotatedX - centerX) + Math.abs(rotatedY - centerY)) / size;
       break;
@@ -169,19 +232,64 @@ const calculateValue = (
 };
 
 export const generateArt = (config: ArtConfig, time: number): string => {
-  const { size, shape, pattern, characters, mainColor, rotation } = config;
+  const {
+    size,
+    shape,
+    pattern,
+    characters,
+    mainColor,
+    accentColors,
+    rotation,
+  } = config;
+
+  // Add padding to ensure the shape is fully visible
+  const padding = Math.ceil(size * 0.1); // 10% padding
+  const totalSize = size + padding * 2;
+
   let art = "";
 
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      if (!generateShape(x, y, size, shape, rotation)) {
+  const getColor = (x: number, y: number, value: number): string => {
+    // Adjust x and y to account for padding
+    const adjustedX = x - padding;
+    const adjustedY = y - padding;
+
+    if (!generateShape(adjustedX, adjustedY, size, shape, rotation))
+      return config.backgroundColor;
+    if (accentColors.length === 0) return mainColor;
+
+    // Use position and value to determine color
+    const positionFactor = (adjustedX + adjustedY) / (size * 2);
+    const colorIndex = Math.floor(positionFactor * accentColors.length);
+    const baseColor = accentColors[colorIndex] || mainColor;
+
+    // Mix with main color based on value
+    return mixColors(baseColor, mainColor, value);
+  };
+
+  for (let y = 0; y < totalSize; y++) {
+    for (let x = 0; x < totalSize; x++) {
+      // Adjust x and y to account for padding when checking shape
+      const adjustedX = x - padding;
+      const adjustedY = y - padding;
+
+      if (!generateShape(adjustedX, adjustedY, size, shape, rotation)) {
         art += " ";
         continue;
       }
 
-      const value = calculateValue(x, y, size, shape, pattern, time, rotation);
+      const value = calculateValue(
+        adjustedX,
+        adjustedY,
+        size,
+        shape,
+        pattern,
+        time,
+        rotation
+      );
       const charIndex = Math.floor(value * (characters.length - 1));
-      art += `<span style="color:${mainColor}">${
+      const color = getColor(x, y, value);
+
+      art += `<span style="color:${color}">${
         characters[charIndex] || " "
       }</span>`;
     }
@@ -190,3 +298,15 @@ export const generateArt = (config: ArtConfig, time: number): string => {
 
   return art;
 };
+
+// Helper function to mix colors
+function mixColors(color1: string, color2: string, weight: number): string {
+  const w1 = weight;
+  const w2 = 1 - w1;
+  const rgb1 = parseInt(color1.slice(1), 16);
+  const rgb2 = parseInt(color2.slice(1), 16);
+  const r = Math.round(w1 * (rgb1 >> 16) + w2 * (rgb2 >> 16));
+  const g = Math.round(w1 * ((rgb1 >> 8) & 0xff) + w2 * ((rgb2 >> 8) & 0xff));
+  const b = Math.round(w1 * (rgb1 & 0xff) + w2 * (rgb2 & 0xff));
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
