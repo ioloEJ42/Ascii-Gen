@@ -11,7 +11,7 @@ import { useArtGeneration } from "./hooks/useArtGeneration";
 import { ArtConfig, Shape, Pattern } from "./types";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "./ThemeProvider";
-import { Moon, Sun, Github, Undo, Redo, Shuffle } from "lucide-react";
+import { Moon, Sun, Github, Shuffle } from "lucide-react";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import {
@@ -27,32 +27,17 @@ const ASCIIArtGenerator: React.FC = () => {
     shape: "circle",
     pattern: "solid",
     characters: " .:-=+*#%@",
-    backgroundColor: theme === "light" ? "#ffffff" : "#000000",
-    mainColor: theme === "light" ? "#000000" : "#ffffff",
+    backgroundColor: "#000000",
+    mainColor: "#ffffff",
     accentColors: [],
     rotation: 0,
   };
 
-  const [configHistory, setConfigHistory] = useState<ArtConfig[]>([
-    initialConfig,
-  ]);
-  const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
   const [config, setConfig] = useState<ArtConfig>(initialConfig);
 
-  const updateConfig = useCallback(
-    (newConfig: Partial<ArtConfig>) => {
-      setConfig((prevConfig) => {
-        const updatedConfig = { ...prevConfig, ...newConfig };
-        setConfigHistory((prev) => [
-          ...prev.slice(0, currentConfigIndex + 1),
-          updatedConfig,
-        ]);
-        setCurrentConfigIndex((prev) => prev + 1);
-        return updatedConfig;
-      });
-    },
-    [currentConfigIndex]
-  );
+  const updateConfig = useCallback((newConfig: Partial<ArtConfig>) => {
+    setConfig(prevConfig => ({ ...prevConfig, ...newConfig }));
+  }, []);
 
   useEffect(() => {
     updateConfig({
@@ -131,61 +116,19 @@ const ASCIIArtGenerator: React.FC = () => {
     exportAsReactComponent(art, config);
   };
 
-  const undo = useCallback(() => {
-    if (currentConfigIndex > 0) {
-      const newIndex = currentConfigIndex - 1;
-      setCurrentConfigIndex(newIndex);
-      setConfig(configHistory[newIndex]);
-    }
-  }, [currentConfigIndex, configHistory]);
-
-  const redo = useCallback(() => {
-    if (currentConfigIndex < configHistory.length - 1) {
-      const newIndex = currentConfigIndex + 1;
-      setCurrentConfigIndex(newIndex);
-      setConfig(configHistory[newIndex]);
-    }
-  }, [currentConfigIndex, configHistory]);
-
   const randomize = useCallback(() => {
     const randomConfig: ArtConfig = {
       size: Math.floor(Math.random() * 61) + 20,
-      shape: ["circle", "square", "triangle"][
-        Math.floor(Math.random() * 3)
-      ] as Shape,
-      pattern: [
-        "solid",
-        "stripey",
-        "zigzag",
-        "wave",
-        "random",
-        "spiral",
-        "pulsate",
-        "ripple",
-        "fractal",
-        "noise",
-        "vortex",
-      ][Math.floor(Math.random() * 11)] as Pattern,
-      characters: " .:-=+*#%@"
-        .split("")
-        .sort(() => Math.random() - 0.5)
-        .join(""),
-      backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-      mainColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-      accentColors: Array(3)
-        .fill(null)
-        .map(() => `#${Math.floor(Math.random() * 16777215).toString(16)}`),
+      shape: ["circle", "square", "triangle"][Math.floor(Math.random() * 3)] as Shape,
+      pattern: ["solid", "stripey", "zigzag", "wave", "random", "spiral", "pulsate", "ripple", "fractal", "noise", "vortex"][Math.floor(Math.random() * 11)] as Pattern,
+      characters: " .:-=+*#%@".split('').sort(() => Math.random() - 0.5).join(''),
+      backgroundColor: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+      mainColor: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+      accentColors: Array(3).fill(null).map(() => `#${Math.floor(Math.random()*16777215).toString(16)}`),
       rotation: Math.floor(Math.random() * 361),
     };
-    updateConfig(randomConfig);
-  }, [updateConfig]);
-
-  // Debugging logs
-  useEffect(() => {
-    console.log("Current config:", config);
-    console.log("Config history:", configHistory);
-    console.log("Current index:", currentConfigIndex);
-  }, [config, configHistory, currentConfigIndex]);
+    setConfig(randomConfig);
+  }, []);
 
   const isAnimated = [
     "wave",
@@ -205,24 +148,6 @@ const ASCIIArtGenerator: React.FC = () => {
           <h1 className="text-2xl font-bold">ASCII Art Generator</h1>
           <div className="flex space-x-2">
             <Button
-              onClick={undo}
-              disabled={currentConfigIndex <= 0}
-              variant="outline"
-              size="icon"
-              aria-label="Undo"
-            >
-              <Undo className="h-4 w-4" />
-            </Button>
-            <Button
-              onClick={redo}
-              disabled={currentConfigIndex >= configHistory.length - 1}
-              variant="outline"
-              size="icon"
-              aria-label="Redo"
-            >
-              <Redo className="h-4 w-4" />
-            </Button>
-            <Button
               onClick={randomize}
               variant="outline"
               size="icon"
@@ -234,9 +159,7 @@ const ASCIIArtGenerator: React.FC = () => {
               onClick={toggleTheme}
               variant="outline"
               size="icon"
-              aria-label={`Switch to ${
-                theme === "light" ? "dark" : "light"
-              } mode`}
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
             >
               {theme === "light" ? (
                 <Moon className="h-[1.2rem] w-[1.2rem]" />
@@ -277,9 +200,7 @@ const ASCIIArtGenerator: React.FC = () => {
                   <Input
                     id="characters-input"
                     value={config.characters}
-                    onChange={(e) =>
-                      updateConfig({ characters: e.target.value })
-                    }
+                    onChange={(e) => updateConfig({ characters: e.target.value })}
                     aria-label="ASCII characters to use in the art"
                   />
                 </div>
@@ -287,15 +208,11 @@ const ASCIIArtGenerator: React.FC = () => {
               <TabsContent value="color">
                 <ColorSelector
                   backgroundColor={config.backgroundColor}
-                  setBackgroundColor={(backgroundColor) =>
-                    updateConfig({ backgroundColor })
-                  }
+                  setBackgroundColor={(backgroundColor) => updateConfig({ backgroundColor })}
                   mainColor={config.mainColor}
                   setMainColor={(mainColor) => updateConfig({ mainColor })}
                   accentColors={config.accentColors}
-                  setAccentColors={(accentColors) =>
-                    updateConfig({ accentColors })
-                  }
+                  setAccentColors={(accentColors) => updateConfig({ accentColors })}
                 />
               </TabsContent>
             </Tabs>
@@ -405,16 +322,16 @@ const ASCIIArtGenerator: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             ASCII Online © by Iolo 2024
-            <a
-              href="https://github.com/ioloEJ42"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-300"
-            >
-              <Github className="w-5 h-5 mr-2" />
-              GitHub: ioloEJ42
-            </a>
           </p>
+          <a
+            href="https://github.com/ioloEJ42"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-300"
+          >
+            <Github className="w-5 h-5 mr-2" />
+            GitHub: ioloEJ42
+          </a>
         </div>
       </footer>
     </div>
