@@ -20,6 +20,14 @@ import {
   exportAsGif,
   exportAsReactComponent,
 } from "./utils/exportUtils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 // Main component for ASCII Art Generator
 const ASCIIArtGenerator: React.FC = () => {
@@ -45,6 +53,8 @@ const ASCIIArtGenerator: React.FC = () => {
   const [frameCount, setFrameCount] = useState(10);
   const [showFrameSlider, setShowFrameSlider] = useState(false);
   const [isCharInputFocused, setIsCharInputFocused] = useState(false);
+  const [showTOS, setShowTOS] = useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
 
   // Keyboard shortcuts setup
   useHotkeys("r", () => randomize(), {
@@ -235,6 +245,40 @@ const ASCIIArtGenerator: React.FC = () => {
     "noise",
     "vortex",
   ].includes(config.pattern);
+
+  const TOSDialog = () => (
+    <Dialog open={showTOS} onOpenChange={setShowTOS}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Terms of Service</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          This is a boilerplate Terms of Service. No user data is collected or stored by this application.
+          By using this service, you agree to abide by standard web usage practices.
+        </DialogDescription>
+        <DialogFooter>
+          <Button onClick={() => setShowTOS(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  const PrivacyPolicyDialog = () => (
+    <Dialog open={showPrivacyPolicy} onOpenChange={setShowPrivacyPolicy}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Privacy Policy</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          This is a boilerplate Privacy Policy. This application does not collect, store, or share any personal data.
+          All ASCII art generation is done client-side and no information is transmitted to any server.
+        </DialogDescription>
+        <DialogFooter>
+          <Button onClick={() => setShowPrivacyPolicy(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 
   // Main component rendering
   return (
@@ -484,22 +528,40 @@ const ASCIIArtGenerator: React.FC = () => {
       </div>
 
       {/* Footer with copyright and GitHub link */}
-      <footer className="mt-8 py-4 border-t transition-colors duration-300 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <footer className="mt-8 py-6 border-t transition-colors duration-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            ASCII Online © by Iolo 2024
+            ASCII Online © by Iolo {new Date().getFullYear()}
           </p>
-          <a
-            href="https://github.com/ioloEJ42"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-300"
-          >
-            <Github className="w-5 h-5 mr-2" />
-            GitHub: ioloEJ42
-          </a>
+          <div className="flex items-center space-x-4">
+            <a
+              href="https://github.com/ioloEJ42"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-300"
+            >
+              <Github className="w-5 h-5 mr-2" />
+              GitHub: ioloEJ42
+            </a>
+            <button
+              onClick={() => setShowTOS(true)}
+              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-300"
+            >
+              Terms of Service
+            </button>
+            <button
+              onClick={() => setShowPrivacyPolicy(true)}
+              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-300"
+            >
+              Privacy Policy
+            </button>
+          </div>
         </div>
       </footer>
+
+      {/* Dialogs */}
+      {showTOS && <TOSDialog />}
+      {showPrivacyPolicy && <PrivacyPolicyDialog />}
     </div>
   );
 };

@@ -2,6 +2,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
 
 @layer base {
   :root {
@@ -74,4 +80,11 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap') format('woff2');
+  font-weight: normal;
+  font-style: normal;
 }
