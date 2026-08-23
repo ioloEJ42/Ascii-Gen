@@ -3,22 +3,12 @@ import { Github } from 'lucide-react';
 import { resetWelcomePopup } from '../../lib/cookies';
 
 export const Footer: React.FC = () => {
-  const currentYear = new Date().getFullYear();
   const [showRoadmap, setShowRoadmap] = useState(false);
   const isDevelopment = import.meta.env.DEV;
 
   return (
     <footer className="border-t border-border bg-card/50 py-4">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 sm:flex-row">
-        <div className="flex flex-col items-center sm:items-start">
-          <p className="text-xs text-muted-foreground">
-            // ascii_online (c) iolo {currentYear}
-          </p>
-          <p className="mt-0.5 text-[10px] uppercase tracking-widest text-muted-foreground/70">
-            react + typescript + tailwind
-          </p>
-        </div>
-
+      <div className="mx-auto flex max-w-7xl justify-center px-4">
         <div className="flex items-center gap-3">
           <a
             href="https://github.com/ioloEJ42"
@@ -40,10 +30,10 @@ export const Footer: React.FC = () => {
             <button
               className="border border-dashed border-muted-foreground/30 px-2.5 py-1 text-[11px] uppercase tracking-wide text-muted-foreground/70 transition-colors hover:border-destructive hover:text-destructive"
               onClick={resetWelcomePopup}
-              aria-label="Reset Welcome Popup (Dev Only)"
-              title="Reset Welcome Popup (Dev Only)"
+              aria-label="Show Welcome Popup (Dev Only)"
+              title="Show Welcome Popup (Dev Only)"
             >
-              Reset Welcome
+              Show Welcome
             </button>
           )}
         </div>

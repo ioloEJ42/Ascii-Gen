@@ -63,7 +63,7 @@ export const ShapeSelector: React.FC<ShapeSelectorProps> = ({
       </div>
       <div>
         <label className="label-caps mb-2 flex items-center justify-between">
-          <span>Size</span>
+          <span>Detail</span>
           <span className="text-foreground">{size}</span>
         </label>
         <Slider

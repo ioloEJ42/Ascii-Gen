@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useRef } from "react";
-import "../../ASCIIArtGenerator.css";
 import { Sidebar } from "./Sidebar";
 import { CanvasManager } from "./CanvasManager";
 import { Footer } from "./Footer";

@@ -503,8 +503,16 @@ export const CanvasManager = forwardRef<CanvasManagerRef, CanvasManagerProps>(({
 
   // Update canvas label
   const updateCanvasLabel = useCallback((id: string, label: string) => {
-    setArtInstances(prev => prev.map(instance => 
+    setArtInstances(prev => prev.map(instance =>
       instance.id === id ? { ...instance, label } : instance
+    ));
+  }, []);
+
+  // Keep the tracked size in sync with what's actually rendered, so drag
+  // boundary calculations reflect the real card dimensions
+  const updateCanvasSize = useCallback((id: string, size: { width: number; height: number }) => {
+    setArtInstances(prev => prev.map(instance =>
+      instance.id === id ? { ...instance, size } : instance
     ));
   }, []);
 
@@ -544,8 +552,9 @@ export const CanvasManager = forwardRef<CanvasManagerRef, CanvasManagerProps>(({
     }
   }, [artInstances, nextZIndex, handleSelect]);
 
-  // Throttled mouse move handler
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+  // Throttled mouse move handler — attached to window while dragging (see effect below)
+  // so the drag keeps tracking the cursor even when it leaves the canvas area.
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!draggedInstance || !canvasRef.current) return;
 
     // Throttle to 60fps for better performance
@@ -592,6 +601,20 @@ export const CanvasManager = forwardRef<CanvasManagerRef, CanvasManagerProps>(({
     draggedElementRef.current = null;
     setIsAtBoundary(false);
   }, []);
+
+  // Track the drag on window, not just the canvas area, so it keeps following
+  // the cursor even when the mouse moves over the sidebar/header or outside it.
+  React.useEffect(() => {
+    if (!draggedInstance) return;
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [draggedInstance, handleMouseMove, handleMouseUp]);
 
   // Handle canvas click to deselect
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
@@ -657,8 +680,6 @@ export const CanvasManager = forwardRef<CanvasManagerRef, CanvasManagerProps>(({
           MozUserSelect: "none",
           msUserSelect: "none",
         }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
         onClick={handleCanvasClick}
         onContextMenu={handleContextMenu}
       >
@@ -674,6 +695,7 @@ export const CanvasManager = forwardRef<CanvasManagerRef, CanvasManagerProps>(({
             isCreating={creatingInstances.has(instance.id)}
             isDeleting={deletingInstances.has(instance.id)}
             onLabelChange={(label) => updateCanvasLabel(instance.id, label)}
+            onSizeChange={(size) => updateCanvasSize(instance.id, size)}
             isCanvasSelectionMode={isCanvasSelectionMode}
             onCanvasSelect={() => handleCanvasSelectForSharing(instance)}
           />
@@ -683,7 +705,7 @@ export const CanvasManager = forwardRef<CanvasManagerRef, CanvasManagerProps>(({
         <Button
           onClick={createNewArt}
           size="icon"
-          className="absolute bottom-4 right-4 z-50 rounded-none border border-brand bg-brand text-brand-foreground hover:bg-brand/90"
+          className="absolute bottom-4 right-4 z-[9999] rounded-none border border-brand bg-brand text-brand-foreground hover:bg-brand/90"
           aria-label="Add new ASCII art"
         >
           <Plus className="h-5 w-5" />
@@ -692,7 +714,7 @@ export const CanvasManager = forwardRef<CanvasManagerRef, CanvasManagerProps>(({
         {/* Context Menu */}
         {contextMenu.visible && (
           <div
-            className="fixed z-50 min-w-48 border border-border bg-card shadow-lg"
+            className="fixed z-[9999] min-w-48 border border-border bg-card shadow-lg"
             style={{
               top: contextMenu.y,
               left: contextMenu.x,

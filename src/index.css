@@ -98,3 +98,32 @@
   background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+/*
+ * The card's own resize handle (FloatingArt owns sizing directly — see
+ * FloatingArt.tsx). Visible brand-colored grip, generous hit area.
+ */
+.resize-grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 24px;
+  height: 24px;
+  cursor: se-resize;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+.resize-grip::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 11px;
+  height: 11px;
+  border-right: 2px solid hsl(var(--brand));
+  border-bottom: 2px solid hsl(var(--brand));
+}
+.resize-grip:hover {
+  opacity: 1;
+}
